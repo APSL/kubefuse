@@ -3,35 +3,65 @@ from datetime import datetime
 
 
 class KubePath(object):
-    def __init__(self, namespace=None, resource_type=None, object_id=None, action=None):
-        self.namespace = namespace 
+    def __init__(self, namespace=None, resource_type=None,
+                 object_id=None, action=None):
+        self.namespace = namespace
         self.resource_type = resource_type
         self.object_id = object_id
         self.action = None
         self.SUPPORTED_RESOURCE_TYPES = [
+            'componentstatuses',
             'configmaps',
-            'componentstatuses', 
+            'cronjobs',
             'daemonsets',
             'deployments',
             'endpoints',
-            'events', 
+            'events',
             'horizontalpodautoscalers',
             'ingress',
             'jobs',
-            'limits', 
-            'nodes', 
-            'pod', 
-            'pv', 
+            'limits',
+            'nodes',
+            'pod',
+            'pv',
             'pvc',
-            'quota', 
-            'rc', 
+            'quota',
+            'rc',
             'replicasets',
             'secrets',
-            'serviceaccounts', 
-            'svc', 
+            'serviceaccounts',
+            'svc',
         ]
         self.SUPPORTED_ACTIONS = ['describe', 'json', 'yaml']
         self.SUPPORTED_POD_ACTIONS = ['logs'] + self.SUPPORTED_ACTIONS
+
+        # TODO for fast testing
+        #extra_resources = "certificate"
+        extra_resources = None
+        backup_mode = True
+
+        # allow to extract other datatypes like certificates
+        if extra_resources:
+            for resource in extra_resources.split(","):
+                self.SUPPORTED_RESOURCE_TYPES.append(resource)
+
+        # simple mount mode for backups
+        if backup_mode:
+            self.SUPPORTED_ACTIONS = ["yaml",]
+            self.SUPPORTED_POD_ACTIONS = ["yaml",]
+            backup_removable_types = [
+                'componentstatuses',
+                'endpoints',
+                'events',
+                'jobs',
+                'nodes',
+                'pod',
+                'replicasets',
+                'secrets',
+                'serviceaccounts',
+            ]
+            for remove in backup_removable_types:
+                self.SUPPORTED_RESOURCE_TYPES.remove(remove)
 
     def parse_path(self, path):
         if path == '/':

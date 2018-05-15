@@ -18,7 +18,8 @@ from . import filesystem
 
 class KubeFuse(LoggingMixIn, Operations):
 
-    def __init__(self, mount, kubeconfig=None, cluster=None, context=None, user=None):
+    def __init__(self, mount, kubeconfig=None, cluster=None, context=None, user=None,
+                 extra_resources=None, backup_mode=None):
         self.client = client.KubernetesClient(kubeconfig, cluster, context, user)
         self.fs = filesystem.KubeFileSystem(self.client)
         self.fd = 0
@@ -68,6 +69,12 @@ def parse_args():
                         help='The name of the kubeconfig user to use')
     parser.add_argument('--verbose', '-v', action='count', dest='verbosity',
                         default=0, help='Verbosity of program output')
+#    parser.add_argument('--extra-resources', dest='extra_resources',
+#                        help='Extra resources to show')
+#    parser.add_argument('--backup-mode', dest='backup_mode',
+#                        default=False,
+#                        help='Backup mode: get only yaml and do not get events')
+
     return parser.parse_args()
 
 def main():
@@ -82,6 +89,7 @@ def main():
         logging.basicConfig(level=0)
     FUSE(KubeFuse(args.mountpoint, args.kubeconfig, args.cluster, args.context),
          args.mountpoint, foreground=True)
+         #extra_resources=args.extra_resources, backup_mode=args.backup_mode)
 
 if __name__ == '__main__':
     main()
